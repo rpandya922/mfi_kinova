@@ -1,0 +1,125 @@
+<launch>
+
+    <arg name="serial_rs0" default = "845112071853"/>
+    <arg name="serial_rs1" default = "845112072047"/>
+    <arg name="serial_rs2" default = "908212070729"/>
+    <arg name="serial_kinect" default = "011130165147"/>
+
+    <arg name="dev_rs0" default = "/dev/video9"/>
+    <arg name="dev_rs1" default = "/dev/video10"/>
+    <arg name="dev_rs2" default = "/dev/video11"/>
+    <arg name="dev_kinect" default = "/dev/video11"/> 
+
+    <arg name="color_width" default = "1920"/>
+    <arg name="color_height" default = "1080"/>
+
+    <arg name="viz" default = "true"/>
+    <arg name="enable_rs0" default = "false"/>
+    <arg name="enable_rs1" default = "false"/>
+    <arg name="enable_rs2" default = "true"/>
+    <arg name="enable_kinect" default = "false"/>
+
+    <group if="$(arg enable_rs0)">
+
+        <!-- Cam 0 -->
+        <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+            <arg name="color_width"  value="$(arg color_width)"/>
+            <arg name="color_height"  value="$(arg color_height)"/>
+            <arg name="serial_no"  value="$(arg serial_rs0)"/>
+            <arg name="camera"  value="cam_rs0"/>
+        </include>
+
+        <node name="cam_rs0_virtual" pkg="virtual_cam" type="stream" required="true">
+            <param name="device"  value="$(arg dev_rs0)" type="str"/>
+            <param name="width"  value="$(arg color_width)" type="int"/>
+            <param name="height"  value="$(arg color_height)" type="int"/>
+            <param name="fourcc"  value="YV12" type="str"/>
+            <remap from="image"  to="/cam_rs0/color/image_raw" />
+        </node>
+
+        <group if="$(arg viz)">
+            <node name="cam_rs0_view" pkg="image_view" type="image_view">
+                <remap from="image" to="/cam_rs0/color/image_raw" />
+            </node>
+        </group>
+
+    </group>
+
+    <group if="$(arg enable_rs1)">
+
+        <!-- Cam 1 -->
+        <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+            <arg name="color_width"  value="$(arg color_width)"/>
+            <arg name="color_height"  value="$(arg color_height)"/>
+            <arg name="serial_no"  value="$(arg serial_rs1)"/>
+            <arg name="camera"  value="cam_rs1"/>
+        </include>
+
+        <node name="cam_rs1_virtual" pkg="virtual_cam" type="stream" required="true">
+            <param name="device"  value="$(arg dev_rs1)" type="str"/>
+            <param name="width"  value="$(arg color_width)" type="int"/>
+            <param name="height"  value="$(arg color_height)" type="int"/>
+            <param name="fourcc"  value="YV12" type="str"/>
+            <remap from="image"  to="/cam_rs1/color/image_raw" />
+        </node>
+
+        <group if="$(arg viz)">
+            <node name="cam_rs1_view" pkg="image_view" type="image_view">
+                <remap from="image" to="/cam_rs1/color/image_raw" />
+            </node>
+        </group>
+
+    </group>
+
+    <group if="$(arg enable_rs2)">
+
+        <!-- Cam 2 not in OpenPose -->
+        <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+            <arg name="color_width"  value="$(arg color_width)"/>
+            <arg name="color_height"  value="$(arg color_height)"/>
+            <arg name="serial_no"  value="$(arg serial_rs2)"/>
+            <arg name="align_depth" value="true"/>
+            <arg name="camera"  value="cam_rs2"/>
+        </include>
+
+        <node name="cam_rs2_virtual" pkg="virtual_cam" type="stream" required="true">
+            <param name="device"  value="$(arg dev_rs2)" type="str"/>
+            <param name="width"  value="$(arg color_width)" type="int"/>
+            <param name="height"  value="$(arg color_height)" type="int"/>
+            <param name="fourcc"  value="YV12" type="str"/>
+            <remap from="image"  to="/cam_rs2/color/image_raw" />
+        </node>
+
+        <group if="$(arg viz)">
+            <node name="cam_rs2_view" pkg="image_view" type="image_view">
+                <remap from="image" to="/cam_rs2/color/image_raw" />
+            </node>
+        </group>
+
+    </group>
+
+    <group if="$(arg enable_kinect)">
+
+        <!-- kinect -->
+        <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch">
+            <arg name="sensor"  value="$(arg serial_kinect)"/>
+            <arg name="base_name"  value="kinect"/>
+        </include>
+
+        <node name="kinect_virtual" pkg="virtual_cam" type="stream" required="true">
+            <param name="device"  value="$(arg dev_kinect)" type="str"/>
+            <param name="width"  value="$(arg color_width)" type="int"/>
+            <param name="height"  value="$(arg color_height)" type="int"/>
+            <param name="fourcc"  value="YV12" type="str"/>
+            <remap from="image"  to="/kinect/hd/image_color" />
+        </node>
+
+        <group if="$(arg viz)">
+            <node name="kinect_view" pkg="image_view" type="image_view">
+                <remap from="image" to="/kinect/hd/image_color" />
+            </node>
+        </group>
+
+    </group>
+
+</launch>
